@@ -22,7 +22,8 @@ cdf['Eligible'] = pd.to_datetime(cdf.Eligible)
 cdf['Queue'] = cdf.Start - cdf.Eligible
 cdf['Queue_Sec'] = (cdf.Queue.dt.days * 86400) + cdf.Queue.dt.seconds
 cdf['Queue_Min'] = cdf['Queue_Sec']/60
-#print(cdf)
+
+cdf = cdf[cdf['Queue_Sec'] < 259201]
 
 #average queue/user
 avg_queue_user_m = cdf.groupby('User')['Queue_Min'].mean()
