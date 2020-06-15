@@ -29,16 +29,22 @@ avg_queue_user_m = cdf.groupby('User')['Queue_Min'].mean()
 avg_queue_lab_m = cdf.groupby('Account')['Queue_Min'].mean()
 
 #populating HPCLive database
-list = list()
+qulist = list()
 
 for row in avg_queue_user_m.interrows():
     qu = {
     "measurement": "avg_queue_user",
     "tags": {"cluster": "sumner", "user": avg_queue_user_m['User']}
     "fields": { "avg_queue": avg_queue_user_m['Queue_Min']}
+        
+qulist.append(qu)
 
+qllist = list()   
+        
 for row in avg_queue_lab_m.interrows():
     ql = {
     "measurement": "avg_queue_lab",
     "tags": {"cluster": "sumner", "lab": avg_queue_user_m['Account']}
     "fields": { "avg_queue": avg_queue_user_m['Queue_Min']}        }
+
+qllist.append(ql)
