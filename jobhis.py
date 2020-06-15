@@ -2,6 +2,7 @@
 import pandas as pd
 import datetime
 import os
+import influxdb
 
 #automatic data gathering
 start = datetime.datetime.now() - datetime.timedelta(30)
@@ -23,9 +24,21 @@ cdf['Queue'] = cdf.Start - cdf.Eligible
 cdf['Queue_Sec'] = (cdf.Queue.dt.days * 86400) + cdf.Queue.dt.seconds
 cdf['Queue_Min'] = cdf['Queue_Sec']/60
 
-cdf = cdf[cdf['Queue_Sec'] < 259201]
-
 #average queue/user
 avg_queue_user_m = cdf.groupby('User')['Queue_Min'].mean()
 avg_queue_lab_m = cdf.groupby('Account')['Queue_Min'].mean()
 
+#populating HPCLive database
+list = list()
+
+for row in avg_queue_user_m.interrows():
+    qu = {
+    "measurement": "avg_queue_user",
+    "tags": {"cluster": "sumner", "user": avg_queue_user_m['User']}
+    "fields": { "avg_queue": avg_queue_user_m['Queue_Min']}
+
+for row in avg_queue_lab_m.interrows():
+    ql = {
+    "measurement": "avg_queue_lab",
+    "tags": {"cluster": "sumner", "lab": avg_queue_user_m['Account']}
+    "fields": { "avg_queue": avg_queue_user_m['Queue_Min']}        }
