@@ -3,13 +3,16 @@ import pandas as pd
 import datetime
 import os
 import influxdb
+import subprocess
+from io import StringIO
 
 #automatic data gathering
 start = datetime.datetime.now() - datetime.timedelta(30)
 start = start.strftime("%Y-%m-%dT%H:%M:%S")
 
-os.system('sacct -X -a -p -S '+start+' -o JobID,user,account,reserved,eligible,start,Partition,QOS,state > userdata.csv')
-data = pd.read_csv("userdata.csv", sep = "|", header = 0)
+#os.system('sacct -X -a -p -S '+start+' -o JobID,user,account,reserved,eligible,start,Partition,QOS,state > userdata.csv')
+p = subprocess.Popen(f"sacct -X -a -p -S {start} -o JobID,user,account,reserved,eligible,start,Partition,QOS,state".split(), stdout=subprocess.PIPE)
+data = pd.read_csv(p.stdout, sep = "|", header = 0)
 df = pd.DataFrame(data)
 
 #data cleaning/formatting
@@ -31,20 +34,24 @@ avg_queue_lab_m = cdf.groupby('Account')['Queue_Min'].mean()
 #populating HPCLive database
 qulist = list()
 
-for row in avg_queue_user_m.interrows():
+for row in avg_queue_user_m.iteritems():
     qu = {
-    "measurement": "avg_queue_user",
-    "tags": {"cluster": "sumner", "user": avg_queue_user_m['User']}
-    "fields": { "avg_queue": avg_queue_user_m['Queue_Min']}
+        "measurement": "avg_queue_user",
+        "tags": {"cluster": "sumner", "user": row[0]},
+        "fields": { "avg_queue": row[1]}
+    }
         
-qulist.append(qu)
+    qulist.append(qu)
 
 qllist = list()   
         
-for row in avg_queue_lab_m.interrows():
+for row in avg_queue_lab_m.iteritems():
     ql = {
-    "measurement": "avg_queue_lab",
-    "tags": {"cluster": "sumner", "lab": avg_queue_user_m['Account']}
-    "fields": { "avg_queue": avg_queue_user_m['Queue_Min']}        }
+        "measurement": "avg_queue_lab",
+        "tags": {"cluster": "sumner", "lab": row[0]},
+        "fields": { "avg_queue": row[1]}        
+    }
 
-qllist.append(ql)
+    qllist.append(ql)
+
+print(qllist)
