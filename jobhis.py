@@ -4,7 +4,6 @@ import datetime
 import os
 import influxdb
 import subprocess
-from io import StringIO
 
 #automatic data gathering
 start = datetime.datetime.now() - datetime.timedelta(30)
@@ -43,6 +42,7 @@ for row in avg_queue_user_m.iteritems():
         
     qulist.append(qu)
 
+print(qulist)
 qllist = list()   
         
 for row in avg_queue_lab_m.iteritems():
