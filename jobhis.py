@@ -4,6 +4,7 @@ import datetime
 import os
 import influxdb
 import subprocess
+from config import influx as DB
 
 #automatic data gathering
 start = datetime.datetime.now() - datetime.timedelta(30)
@@ -42,7 +43,7 @@ for row in avg_queue_user_m.iteritems():
         
     qulist.append(qu)
 
-print(qulist)
+#print(qulist)
 qllist = list()   
         
 for row in avg_queue_lab_m.iteritems():
@@ -54,4 +55,10 @@ for row in avg_queue_lab_m.iteritems():
 
     qllist.append(ql)
 
-print(qllist)
+#print(qllist)
+
+
+client = influxdb.InfluxDBClient(DB['host'],database=DB['database'],username=DB['user'],password=DB['pass'])
+client.write_points(qulist)
+client.write_points(qllist)
+
